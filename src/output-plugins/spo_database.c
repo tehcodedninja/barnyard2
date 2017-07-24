@@ -332,7 +332,7 @@ u_int32_t SynchronizeEventId(DatabaseData *data)
 	c_cid = 0;
 	DatabaseCleanSelect(data);	
 
-    column_name = 'event_id';
+    char column_name = 'event_id';
     if(table_array[itr] == 'events')
     {
         column_name = 'cid';
