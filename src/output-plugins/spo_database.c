@@ -3078,7 +3078,7 @@ int GetLastCid(DatabaseData *data, int sid,u_int32_t *r_cid)
     DatabaseCleanSelect(data);
     
     if( (SnortSnprintf(data->SQL_SELECT, MAX_QUERY_LENGTH,
-                        "SELECT ISNULL(MAX(id), 0) as last_cid "
+                        "SELECT IFNULL(MAX(id), 0) as last_cid "
                         "  FROM events "
 		       " WHERE sensor_id = %u"
                " HAVING MAX(id) is not null", sid)) != SNORT_SNPRINTF_SUCCESS)
