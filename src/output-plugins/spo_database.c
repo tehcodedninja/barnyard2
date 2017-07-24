@@ -3018,16 +3018,18 @@ int UpdateLastCid(DatabaseData *data, int sid, int cid)
         FatalError("database [%s()]: Failed to Initialize transaction, bailing ... \n",
                    __FUNCTION__);
     }
+
+    return 1;
     
- //    if( (SnortSnprintf(data->SQL_INSERT, MAX_QUERY_LENGTH,
-	// 	       "UPDATE sensors "
-	// 	       "SET last_cid = %u "
-	// 	       "WHERE sid = %u;",
-	// 	       cid, sid)) != SNORT_SNPRINTF_SUCCESS)
- //    {
-	// /* XXX */
-	// return 1;
- //    }
+    if( (SnortSnprintf(data->SQL_INSERT, MAX_QUERY_LENGTH,
+		       "UPDATE sensors "
+		       "SET last_cid = %u "
+		       "WHERE sid = %u;",
+		       cid, sid)) != SNORT_SNPRINTF_SUCCESS)
+    {
+	/* XXX */
+	return 1;
+    }
     
     if(Insert(data->SQL_INSERT, data,0))
     {
