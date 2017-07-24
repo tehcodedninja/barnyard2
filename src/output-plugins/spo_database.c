@@ -678,7 +678,7 @@ u_int32_t DatabasePluginInitializeSensor(DatabaseData *data)
 	    
 	    DatabaseCleanSelect(data);
             if( (SnortSnprintf(data->SQL_SELECT,data->SQL_SELECT_SIZE,
-			       "SELECT id "
+			       "SELECT id as sid "
 			       "  FROM sensors "
 			       " WHERE hostname = '%s' "
 			       "   AND interface = '%s' "
@@ -710,7 +710,7 @@ u_int32_t DatabasePluginInitializeSensor(DatabaseData *data)
 	    
 	    DatabaseCleanSelect(data);
             if( (SnortSnprintf(data->SQL_SELECT,data->SQL_SELECT_SIZE,
-			       "SELECT id "
+			       "SELECT id as sid "
 			       "  FROM sensors "
 			       " WHERE hostname = '%s' "
 			       "   AND interface = '%s' "
@@ -744,7 +744,7 @@ u_int32_t DatabasePluginInitializeSensor(DatabaseData *data)
 	    
             DatabaseCleanSelect(data);
             if( (SnortSnprintf(data->SQL_SELECT,data->SQL_SELECT_SIZE,
-			       "SELECT id "
+			       "SELECT id as sid "
 			       "  FROM sensors "
 			       " WHERE hostname = '%s' "
 
@@ -777,7 +777,7 @@ u_int32_t DatabasePluginInitializeSensor(DatabaseData *data)
 	    
 	    DatabaseCleanSelect(data);
 	    if( (SnortSnprintf(data->SQL_SELECT,data->SQL_SELECT_SIZE,
-			       "SELECT id "
+			       "SELECT id sid "
 			       "  FROM sensors "
 			       " WHERE hostname = '%s' "
 			       "   AND interface = '%s' "
