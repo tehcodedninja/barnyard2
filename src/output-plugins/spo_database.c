@@ -332,7 +332,7 @@ u_int32_t SynchronizeEventId(DatabaseData *data)
 	c_cid = 0;
 	DatabaseCleanSelect(data);	
 	if(SnortSnprintf(data->SQL_SELECT,data->SQL_SELECT_SIZE,
-			 "SELECT MAX(event_id) as 'MAX(cid)' FROM %s WHERE sensor_id='%u';",
+			 "SELECT MAX(cid) FROM %s WHERE sensor_id='%u';",
 			 table_array[itr],
 			 data->sid))
 	{
@@ -1852,7 +1852,7 @@ int dbProcessEventInformation(DatabaseData *data,Packet *p,
 	{
 	    if( (SnortSnprintf(SQLQueryPtr, MAX_QUERY_LENGTH,
 			       "INSERT INTO "
-			       "events (sensor_id, event_id, signature_id) "
+			       "events (sensor_id, cid, signature_id) "
 			       "VALUES (%u, %u, %u));",
 			       data->sid, 
 			       data->cid, 
