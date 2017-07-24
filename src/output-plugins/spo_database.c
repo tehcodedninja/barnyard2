@@ -332,7 +332,7 @@ u_int32_t SynchronizeEventId(DatabaseData *data)
 	c_cid = 0;
 	DatabaseCleanSelect(data);	
 	if(SnortSnprintf(data->SQL_SELECT,data->SQL_SELECT_SIZE,
-			 "SELECT MAX(cid) FROM %s WHERE sensor_id='%u';",
+			 "SELECT IFNULL(MAX(cid), IFNULL(MAX(event_id), 0)) as 'MAX(cid)' FROM %s WHERE sensor_id='%u';",
 			 table_array[itr],
 			 data->sid))
 	{
