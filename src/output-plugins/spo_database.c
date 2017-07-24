@@ -3078,7 +3078,8 @@ int GetLastCid(DatabaseData *data, int sid,u_int32_t *r_cid)
     if( (SnortSnprintf(data->SQL_SELECT, MAX_QUERY_LENGTH,
                         "SELECT MAX(id) as last_cid "
                         "  FROM events "
-		       " WHERE sensor_id = %u", sid)) != SNORT_SNPRINTF_SUCCESS)
+		       " WHERE sensor_id = %u"
+               " HAVING MAX(id) is not null", sid)) != SNORT_SNPRINTF_SUCCESS)
     {
 	*r_cid = 0;
         return 1;

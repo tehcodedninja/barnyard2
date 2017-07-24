@@ -95,14 +95,14 @@
 ** some had and it would wreck logical havock, so to prevent bugs Queries have been keept commented but the code has been reverted to normal behavior.
 ** Ref: http://www.postgresql.org/docs/9.1/static/datatype-binary.html
 
-#define PGSQL_SQL_INSERT_SPECIFIC_REFERENCE_SYSTEM "INSERT INTO reference_system (ref_system_name) VALUES (E'%s');"
-#define PGSQL_SQL_SELECT_SPECIFIC_REFERENCE_SYSTEM "SELECT `ref_system_id` FROM reference_system WHERE ref_system_name = E'%s';"
-#define PGSQL_SQL_INSERT_SPECIFIC_REF  "INSERT INTO reference (`ref_system_id`,ref_tag) VALUES ('%u',E'%s');"
-#define PGSQL_SQL_SELECT_SPECIFIC_REF  "SELECT ref_id FROM reference WHERE `ref_system_id` = '%u' AND ref_tag = E'%s';"
+#define PGSQL_SQL_INSERT_SPECIFIC_REFERENCE_SYSTEM "INSERT INTO reference_system (name) VALUES (E'%s');"
+#define PGSQL_SQL_SELECT_SPECIFIC_REFERENCE_SYSTEM "SELECT `id` FROM reference_system WHERE name = E'%s';"
+#define PGSQL_SQL_INSERT_SPECIFIC_REF  "INSERT INTO reference (`id`,ref_tag) VALUES ('%u',E'%s');"
+#define PGSQL_SQL_SELECT_SPECIFIC_REF  "SELECT reference_id FROM reference WHERE `id` = '%u' AND ref_tag = E'%s';"
 #define PGSQL_SQL_INSERT_CLASSIFICATION "INSERT INTO sig_class (sig_class_name) VALUES (E'%s');"
 #define PGSQL_SQL_SELECT_SPECIFIC_CLASSIFICATION "SELECT sig_class_id FROM sig_class WHERE sig_class_name = E'%s';"
 #define PGSQL_SQL_INSERT_SIGNATURE "INSERT INTO signature (sig_sid, sig_gid, sig_rev, sig_class_id, sig_priority, sig_name) VALUES ('%u','%u','%u','%u','%u',E'%s');"
-#define PGSQL_SQL_SELECT_SPECIFIC_SIGNATURE "SELECT sig_id FROM signature WHERE " \
+#define PGSQL_SQL_SELECT_SPECIFIC_SIGNATURE "SELECT signature_id FROM signature WHERE " \
     "(sig_sid  = '%u') AND "						\
     "(sig_gid  = '%u') AND "						\
     "(sig_rev  = '%u') AND "						\
@@ -116,44 +116,44 @@
 //#endif
 
 
-#define SQL_INSERT_SPECIFIC_REFERENCE_SYSTEM "INSERT INTO reference_system (ref_system_name) VALUES ('%s');"
-#define SQL_SELECT_SPECIFIC_REFERENCE_SYSTEM "SELECT `ref_system_id` FROM reference_system WHERE ref_system_name = '%s';"
-#define SQL_INSERT_SPECIFIC_REF  "INSERT INTO reference (`ref_system_id`,ref_tag) VALUES ('%u','%s');"
-#define SQL_SELECT_SPECIFIC_REF  "SELECT ref_id FROM reference WHERE `ref_system_id` = '%u' AND ref_tag = '%s';"
-#define SQL_INSERT_CLASSIFICATION "INSERT INTO sig_class (sig_class_name) VALUES ('%s');"
-#define SQL_SELECT_SPECIFIC_CLASSIFICATION "SELECT sig_class_id FROM sig_class WHERE sig_class_name = '%s';"
-#define SQL_INSERT_SIGNATURE "INSERT INTO signature (sig_sid, sig_gid, sig_rev, sig_class_id, sig_priority, sig_name) VALUES ('%u','%u','%u','%u','%u','%s');"
-#define SQL_SELECT_SPECIFIC_SIGNATURE "SELECT sig_id FROM signature WHERE " \
-    "(sig_sid  = '%u') AND "						\
-    "(sig_gid  = '%u') AND "						\
-    "(sig_rev  = '%u') AND "						\
+#define SQL_INSERT_SPECIFIC_REFERENCE_SYSTEM "INSERT INTO systems (name) VALUES ('%s');"
+#define SQL_SELECT_SPECIFIC_REFERENCE_SYSTEM "SELECT `id` FROM systems WHERE name = '%s';"
+#define SQL_INSERT_SPECIFIC_REF  "INSERT INTO references (`system_id`,tag) VALUES ('%u','%s');"
+#define SQL_SELECT_SPECIFIC_REF  "SELECT id FROM references WHERE `system_id` = '%u' AND tag = '%s';"
+#define SQL_INSERT_CLASSIFICATION "INSERT INTO classifications (name) VALUES ('%s');"
+#define SQL_SELECT_SPECIFIC_CLASSIFICATION "SELECT is FROM classifications WHERE name = '%s';"
+#define SQL_INSERT_SIGNATURE "INSERT INTO signatures (sid, gid, revision, classification_id, priority, name) VALUES ('%u','%u','%u','%u','%u','%s');"
+#define SQL_SELECT_SPECIFIC_SIGNATURE "SELECT id FROM signatures WHERE " \
+    "(sid  = '%u') AND "						\
+    "(gid  = '%u') AND "						\
+    "(classification_id  = '%u') AND "						\
     "(sig_class_id = '%u') AND "					\
-    "(sig_priority = '%u') AND "					\
-    "(sig_name = '%s'); "						\
+    "(priority = '%u') AND "					\
+    "(name = '%s'); "						\
 
 
 /* Used for backward compatibility with older barnyard process */
-#define SQL_SELECT_SPECIFIC_SIGNATURE_WITHOUT_MESSAGE "SELECT sig_id FROM signature WHERE " \
-    "(sig_sid  = '%u') AND "                                            \
-    "(sig_gid  = '%u') AND "                                            \
-    "(sig_rev  = '%u') AND "                                            \
-    "(sig_class_id = '%u') AND "                                        \
-    "(sig_priority = '%u');"						\
+#define SQL_SELECT_SPECIFIC_SIGNATURE_WITHOUT_MESSAGE "SELECT id FROM signatures WHERE " \
+    "(sid  = '%u') AND "                                            \
+    "(gid  = '%u') AND "                                            \
+    "(revision  = '%u') AND "                                            \
+    "(classification_id = '%u') AND "                                        \
+    "(priority = '%u');"						\
 /* Used for backward compatibility with older barnyard process */
 
 
-#define SQL_SELECT_ALL_SIGREF "SELECT ref_id, sig_id, ref_seq FROM sig_reference ORDER BY sig_id,ref_seq;"
-#define SQL_INSERT_SIGREF "INSERT INTO sig_reference (ref_id,sig_id,ref_seq) VALUES ('%u','%u','%u');"
-#define SQL_SELECT_SPECIFIC_SIGREF "SELECT ref_id FROM sig_reference WHERE (ref_id = '%u') AND (sig_id = '%u') AND (ref_seq='%u');"
-#define SQL_SELECT_ALL_REFERENCE_SYSTEM  "SELECT `ref_system_id`, ref_system_name FROM reference_system;"
-#define SQL_SELECT_ALL_REF "SELECT ref_id, `ref_system_id`, ref_tag FROM reference; "
-#define SQL_SELECT_ALL_CLASSIFICATION "SELECT sig_class_id, sig_class_name FROM sig_class ORDER BY sig_class_id ASC; "
-#define SQL_SELECT_ALL_SIGNATURE "SELECT sig_id, sig_sid, sig_gid,sig_rev, sig_class_id, sig_priority, sig_name FROM signature;"
-#define SQL_UPDATE_SPECIFIC_SIGNATURE "UPDATE signature SET "		\
-    "sig_class_id = '%u',"						\
-    "sig_priority = '%u',"						\
-    "sig_rev = '%u' "						\
-    "WHERE sig_id = '%u'; "
+#define SQL_SELECT_ALL_SIGREF "SELECT reference_id, signature_id, sequence FROM reference_signature ORDER BY signature_id,sequence;"
+#define SQL_INSERT_SIGREF "INSERT INTO reference_signature (reference_id,signature_id,sequence) VALUES ('%u','%u','%u');"
+#define SQL_SELECT_SPECIFIC_SIGREF "SELECT reference_id FROM reference_signature WHERE (reference_id = '%u') AND (signature_id = '%u') AND (sequence='%u');"
+#define SQL_SELECT_ALL_REFERENCE_SYSTEM  "SELECT `id`, name FROM systems;"
+#define SQL_SELECT_ALL_REF "SELECT reference_id, `id`, tag FROM references; "
+#define SQL_SELECT_ALL_CLASSIFICATION "SELECT id, name FROM classifications ORDER BY id ASC; "
+#define SQL_SELECT_ALL_SIGNATURE "SELECT signature_id, sig_sid, sig_gid, revision, classification_id, priority, name FROM signatures;"
+#define SQL_UPDATE_SPECIFIC_SIGNATURE "UPDATE signatures SET "		\
+    "id = '%u',"						\
+    "priority = '%u',"						\
+    "revision = '%u' "						\
+    "WHERE signature_id = '%u'; "
 
 #endif /* CACHE_SQL_QUERY */
 
