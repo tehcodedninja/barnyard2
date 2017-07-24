@@ -319,7 +319,7 @@ u_int32_t SynchronizeEventId(DatabaseData *data)
     u_int32_t num_tables = 7;
     u_int32_t itr = 0;
     
-    char table_array[DB_CHECK_TABLES][DB_TABLE_NAME_LEN] = {"data","event","icmphdr","iphdr","opt","tcphdr","udphdr"};
+    char table_array[DB_CHECK_TABLES][DB_TABLE_NAME_LEN] = {"payloads","events","icmp_headers","ip_headers","options","tcp_headers","udp_headers"};
     
     if( GetLastCid(data, data->sid,(u_int32_t *)&data->cid))
     {
@@ -332,7 +332,7 @@ u_int32_t SynchronizeEventId(DatabaseData *data)
 	c_cid = 0;
 	DatabaseCleanSelect(data);	
 	if(SnortSnprintf(data->SQL_SELECT,data->SQL_SELECT_SIZE,
-			 "SELECT MAX(cid) FROM %s WHERE sid='%u';",
+			 "SELECT MAX(event_id) FROM %s WHERE sensor_id='%u';",
 			 table_array[itr],
 			 data->sid))
 	{
@@ -666,8 +666,8 @@ u_int32_t DatabasePluginInitializeSensor(DatabaseData *data)
         {
 	    DatabaseCleanInsert(data);
 	    if( (SnortSnprintf(data->SQL_INSERT, data->SQL_INSERT_SIZE,
-			       "INSERT INTO sensor (hostname, interface, detail, encoding, last_cid) "
-			       "VALUES ('%s','%s',%u,%u, 0);",
+			       "INSERT INTO sensors (hostname, interface, detail, encoding) "
+			       "VALUES ('%s','%s',%u,%u);",
 			       escapedSensorName, escapedInterfaceName,
 			       data->detail, data->encoding)) != SNORT_SNPRINTF_SUCCESS)
 	    {
@@ -678,8 +678,8 @@ u_int32_t DatabasePluginInitializeSensor(DatabaseData *data)
 	    
 	    DatabaseCleanSelect(data);
             if( (SnortSnprintf(data->SQL_SELECT,data->SQL_SELECT_SIZE,
-			       "SELECT sid "
-			       "  FROM sensor "
+			       "SELECT id "
+			       "  FROM sensors "
 			       " WHERE hostname = '%s' "
 			       "   AND interface = '%s' "
 			       "   AND detail = %u "
@@ -699,8 +699,8 @@ u_int32_t DatabasePluginInitializeSensor(DatabaseData *data)
 	    
 	    DatabaseCleanInsert(data);
             if( (SnortSnprintf(data->SQL_INSERT, data->SQL_INSERT_SIZE,
-			       "INSERT INTO sensor (hostname, interface, filter, detail, encoding, last_cid) "
-			       "VALUES ('%s','%s','%s',%u,%u, 0);",
+			       "INSERT INTO sensors (hostname, interface, filter, detail, encoding) "
+			       "VALUES ('%s','%s','%s',%u,%u);",
 			       escapedSensorName, escapedInterfaceName,
 			       escapedBPFFilter, data->detail, data->encoding)) != SNORT_SNPRINTF_SUCCESS)
 	    {
@@ -710,8 +710,8 @@ u_int32_t DatabasePluginInitializeSensor(DatabaseData *data)
 	    
 	    DatabaseCleanSelect(data);
             if( (SnortSnprintf(data->SQL_SELECT,data->SQL_SELECT_SIZE,
-			       "SELECT sid "
-			       "  FROM sensor "
+			       "SELECT id "
+			       "  FROM sensors "
 			       " WHERE hostname = '%s' "
 			       "   AND interface = '%s' "
 			       "   AND filter ='%s' "
@@ -732,8 +732,8 @@ u_int32_t DatabasePluginInitializeSensor(DatabaseData *data)
 	{
 	    DatabaseCleanInsert(data);
 	    if( (SnortSnprintf(data->SQL_INSERT, data->SQL_INSERT_SIZE,
-			       "INSERT INTO sensor (hostname, interface, detail, encoding, last_cid) "
-			       "VALUES ('%s','%s',%u,%u, 0);",
+			       "INSERT INTO sensors (hostname, interface, detail, encoding) "
+			       "VALUES ('%s','%s',%u,%u);",
 			       escapedSensorName, escapedInterfaceName,
 			       data->detail, data->encoding)) != SNORT_SNPRINTF_SUCCESS)
 	    {
@@ -744,8 +744,8 @@ u_int32_t DatabasePluginInitializeSensor(DatabaseData *data)
 	    
             DatabaseCleanSelect(data);
             if( (SnortSnprintf(data->SQL_SELECT,data->SQL_SELECT_SIZE,
-			       "SELECT sid "
-			       "  FROM sensor "
+			       "SELECT id "
+			       "  FROM sensors "
 			       " WHERE hostname = '%s' "
 
 			       "   AND interface = '%s' "
@@ -765,8 +765,8 @@ u_int32_t DatabasePluginInitializeSensor(DatabaseData *data)
 	    
 	    DatabaseCleanInsert(data);
             if( (SnortSnprintf(data->SQL_INSERT, data->SQL_INSERT_SIZE,
-			       "INSERT INTO sensor (hostname, interface, filter, detail, encoding, last_cid) "
-			       "VALUES ('%s','%s','%s',%u,%u, 0);",
+			       "INSERT INTO sensors (hostname, interface, filter, detail, encoding) "
+			       "VALUES ('%s','%s','%s',%u,%u);",
 			       escapedSensorName, escapedInterfaceName,
 			       escapedBPFFilter, data->detail, data->encoding)) != SNORT_SNPRINTF_SUCCESS)
 	    {
@@ -777,8 +777,8 @@ u_int32_t DatabasePluginInitializeSensor(DatabaseData *data)
 	    
 	    DatabaseCleanSelect(data);
 	    if( (SnortSnprintf(data->SQL_SELECT,data->SQL_SELECT_SIZE,
-			       "SELECT sid "
-			       "  FROM sensor "
+			       "SELECT id "
+			       "  FROM sensors "
 			       " WHERE hostname = '%s' "
 			       "   AND interface = '%s' "
 			       "   AND detail = %u "
@@ -1852,12 +1852,11 @@ int dbProcessEventInformation(DatabaseData *data,Packet *p,
 	{
 	    if( (SnortSnprintf(SQLQueryPtr, MAX_QUERY_LENGTH,
 			       "INSERT INTO "
-			       "event (sid,cid,signature,timestamp) "
-			       "VALUES (%u, %u, %u, TO_DATE('%s', 'YYYY-MM-DD HH24:MI:SS'));",
+			       "events (sensor_id, event_id, signature_id) "
+			       "VALUES (%u, %u, %u));",
 			       data->sid, 
 			       data->cid, 
-			       i_sig_id, 
-			       data->timestampHolder)) != SNORT_SNPRINTF_SUCCESS)
+			       i_sig_id)) != SNORT_SNPRINTF_SUCCESS)
 	    {
 		goto bad_query;
 	    }
@@ -1879,7 +1878,7 @@ int dbProcessEventInformation(DatabaseData *data,Packet *p,
 /* -elz: ODBC with {ts ....} string for timestamp!? nha...
   if( (SnortSnprintf(SQLQueryPtr, MAX_QUERY_LENGTH,
 			   "INSERT INTO "
-			   "event (sid,cid,signature,timestamp) "
+			   "events (sid,cid,signature,timestamp) "
 			   "VALUES (%u, %u, %u, {ts '%s'})",
 			   data->sid, 
 			   data->cid, 
@@ -1900,12 +1899,11 @@ int dbProcessEventInformation(DatabaseData *data,Packet *p,
     GenericEVENTQUERYJMP:
 	if( (SnortSnprintf(SQLQueryPtr, MAX_QUERY_LENGTH,
 			   "INSERT INTO "
-			   "event (sid,cid,signature,timestamp) "
-			   "VALUES (%u, %u, %u, '%s');",
+			   "events (sensor_id, cid, signature_id) "
+			   "VALUES (%u, %u, %u);",
 			   data->sid, 
 			   data->cid, 
-			   i_sig_id, 
-			   data->timestampHolder)) != SNORT_SNPRINTF_SUCCESS)
+			   i_sig_id)) != SNORT_SNPRINTF_SUCCESS)
 	{
 	    goto bad_query;
 	}
@@ -1941,7 +1939,7 @@ int dbProcessEventInformation(DatabaseData *data,Packet *p,
 		    {
 			if( (SnortSnprintf(SQLQueryPtr, MAX_QUERY_LENGTH,
 					   "INSERT INTO "
-					   "icmphdr (sid, cid, icmp_type, icmp_code, icmp_csum, icmp_id, icmp_seq) "
+					   "imcp_headers (sensor_id, event_id, type, code, checksum, icmp_id, icmp_seq) "
 					   "VALUES (%u,%u,%u,%u,%u,%u,%u);",
 					   data->sid, 
 					   data->cid, 
@@ -1958,7 +1956,7 @@ int dbProcessEventInformation(DatabaseData *data,Packet *p,
 		    {
 			if( (SnortSnprintf(SQLQueryPtr, MAX_QUERY_LENGTH,
 					   "INSERT INTO "
-					   "icmphdr (sid, cid, icmp_type, icmp_code) "
+					   "imcp_headers (sensor_id, event_id, type, code) "
 					       "VALUES (%u,%u,%u,%u);",
 					   data->sid, 
 					   data->cid,
@@ -1997,9 +1995,9 @@ int dbProcessEventInformation(DatabaseData *data,Packet *p,
 		    {
 			if( (SnortSnprintf(SQLQueryPtr, MAX_QUERY_LENGTH,
 					   "INSERT INTO "
-					   "tcphdr (sid, cid, tcp_sport, tcp_dport, "
-					   "tcp_seq, tcp_ack, tcp_off, tcp_res, "
-					   "tcp_flags, tcp_win, tcp_csum, tcp_urp) "
+					   "tcp_headers (sensor_id, event_id, source_port, destination_port, "
+					   "sequence, ack, offset, reserved, "
+					   "flags, window, checksum, urgent_pointer) "
 					   "VALUES (%u,%u,%u,%u,%lu,%lu,%u,%u,%u,%u,%u,%u);",
 					   data->sid,
 					   data->cid,
@@ -2021,7 +2019,7 @@ int dbProcessEventInformation(DatabaseData *data,Packet *p,
 		    {
 			if( (SnortSnprintf(SQLQueryPtr, MAX_QUERY_LENGTH,
 					   "INSERT INTO "
-					   "tcphdr (sid,cid,tcp_sport,tcp_dport,tcp_flags) "
+					   "tcphdr (sensor_id, event_id, source_port, destination_port, flags) "
 					   "VALUES (%u,%u,%u,%u,%u);",
 					   data->sid,
 					   data->cid,
@@ -2075,7 +2073,7 @@ int dbProcessEventInformation(DatabaseData *data,Packet *p,
 				     */
 				    if( (SnortSnprintf(SQLQueryPtr, MAX_QUERY_LENGTH,
 						       "INSERT INTO "
-						       "opt (sid,cid,optid,opt_proto,opt_code,opt_len,opt_data) "
+						       "options (sensor_id, event_id, optid, protocol, code, length, data) "
 						       "VALUES (%u,%u,%u,%u,%u,%u,:1);|%s",
 						       data->sid,
 						       data->cid,
@@ -2093,7 +2091,7 @@ int dbProcessEventInformation(DatabaseData *data,Packet *p,
 				{
 				    if( (SnortSnprintf(SQLQueryPtr, MAX_QUERY_LENGTH,
 						       "INSERT INTO "
-						       "opt (sid,cid,optid,opt_proto,opt_code,opt_len,opt_data) "
+						       "opt (sensor_id, event_id, optid, protocol, code, length, data) "
 						       "VALUES (%u,%u,%u,%u,%u,%u,'%s');",
 						       data->sid,
 						       data->cid,
@@ -2138,7 +2136,7 @@ int dbProcessEventInformation(DatabaseData *data,Packet *p,
 		    {
 			if( (SnortSnprintf(SQLQueryPtr, MAX_QUERY_LENGTH,
 					   "INSERT INTO "
-					   "udphdr (sid, cid, udp_sport, udp_dport, udp_len, udp_csum) "
+					   "udp_headers (sensor_id, event_id, source_port, destination_port, length, checksum) "
 					   "VALUES (%u, %u, %u, %u, %u, %u);",
 					   data->sid,
 					   data->cid,
@@ -2154,7 +2152,7 @@ int dbProcessEventInformation(DatabaseData *data,Packet *p,
 		    {
 			if( (SnortSnprintf(SQLQueryPtr, MAX_QUERY_LENGTH,
 					   "INSERT INTO "
-					   "udphdr (sid, cid, udp_sport, udp_dport) "
+					   "udp_headers (sensor_id, event_id, source_port, destination_port) "
 					   "VALUES (%u, %u, %u, %u);",
 					   data->sid,
 					   data->cid,
@@ -2196,9 +2194,9 @@ int dbProcessEventInformation(DatabaseData *data,Packet *p,
 		{
 		    if( (SnortSnprintf(SQLQueryPtr, MAX_QUERY_LENGTH,
 					"INSERT INTO "
-					"iphdr (sid, cid, ip_src, ip_dst, ip_ver, ip_hlen, "
-					"ip_tos, ip_len, ip_id, ip_flags, ip_off,"
-					"ip_ttl, ip_proto, ip_csum) "
+					"ip_headers (sensor_id, event_id, source, destination, version, header_length, "
+					"type_of_service, length, ip_id, flags, offset,"
+					"ttl, protocol, checksum) "
 					"VALUES (%u,%u,%lu,%lu,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u);",
 					data->sid,
 					data->cid,
@@ -2222,7 +2220,7 @@ int dbProcessEventInformation(DatabaseData *data,Packet *p,
 		{
 		    if( (SnortSnprintf(SQLQueryPtr, MAX_QUERY_LENGTH,
 					"INSERT INTO "
-					"iphdr (sid, cid, ip_src, ip_dst, ip_proto) "
+					"ip_headers (sensor_id, event_id, source, destination, protocol) "
 					"VALUES (%u,%u,%lu,%lu,%u);",
 					data->sid,
 					data->cid,
@@ -2277,7 +2275,7 @@ int dbProcessEventInformation(DatabaseData *data,Packet *p,
 				 */
 				if( (SnortSnprintf(SQLQueryPtr, MAX_QUERY_LENGTH,
 						   "INSERT INTO "
-						   "opt (sid,cid,optid,opt_proto,opt_code,opt_len,opt_data) "
+						   "options (sensor_id, event_id, optid, protocol, code, length, data) "
 						   "VALUES (%u,%u,%u,%u,%u,%u,:1);|%s",
 						   data->sid,
 						   data->cid,
@@ -2295,7 +2293,7 @@ int dbProcessEventInformation(DatabaseData *data,Packet *p,
 			    {
 				if( (SnortSnprintf(SQLQueryPtr, MAX_QUERY_LENGTH,
 						   "INSERT INTO "
-						    "opt (sid,cid,optid,opt_proto,opt_code,opt_len,opt_data) "
+						    "options (sensor_id, event_id, optid, protocol, code, length, data) "
 						   "VALUES (%u,%u,%u,%u,%u,%u,'%s');",
 						   data->sid,
 						   data->cid,
@@ -2376,7 +2374,7 @@ int dbProcessEventInformation(DatabaseData *data,Packet *p,
 			     */
 			    if( (SnortSnprintf(SQLQueryPtr, MAX_QUERY_LENGTH,
 					       "INSERT INTO "
-					       "data (sid,cid,data_payload) "
+					       "payloads (sensor_id, event_id, payload) "
 					       "VALUES (%u,%u,:1);|%s",
 					       data->sid,
 					       data->cid,
@@ -2390,7 +2388,7 @@ int dbProcessEventInformation(DatabaseData *data,Packet *p,
 			default:
 			    if( (SnortSnprintf(SQLQueryPtr, MAX_QUERY_LENGTH,
 					       "INSERT INTO "
-					       "data (sid,cid,data_payload) "
+					       "payloads (sensor_id, event_id, payload) "
 					       "VALUES (%u,%u,'%s');",
 					       data->sid,
 					       data->cid,
@@ -3021,15 +3019,15 @@ int UpdateLastCid(DatabaseData *data, int sid, int cid)
                    __FUNCTION__);
     }
     
-    if( (SnortSnprintf(data->SQL_INSERT, MAX_QUERY_LENGTH,
-		       "UPDATE sensor "
-		       "SET last_cid = %u "
-		       "WHERE sid = %u;",
-		       cid, sid)) != SNORT_SNPRINTF_SUCCESS)
-    {
-	/* XXX */
-	return 1;
-    }
+ //    if( (SnortSnprintf(data->SQL_INSERT, MAX_QUERY_LENGTH,
+	// 	       "UPDATE sensors "
+	// 	       "SET last_cid = %u "
+	// 	       "WHERE sid = %u;",
+	// 	       cid, sid)) != SNORT_SNPRINTF_SUCCESS)
+ //    {
+	// /* XXX */
+	// return 1;
+ //    }
     
     if(Insert(data->SQL_INSERT, data,0))
     {
@@ -3078,9 +3076,9 @@ int GetLastCid(DatabaseData *data, int sid,u_int32_t *r_cid)
     DatabaseCleanSelect(data);
     
     if( (SnortSnprintf(data->SQL_SELECT, MAX_QUERY_LENGTH,
-                        "SELECT last_cid "
-                        "  FROM sensor "
-		       " WHERE sid = %u", sid)) != SNORT_SNPRINTF_SUCCESS)
+                        "SELECT MAX(id) as last_cid "
+                        "  FROM events "
+		       " WHERE sensor_id = %u", sid)) != SNORT_SNPRINTF_SUCCESS)
     {
 	*r_cid = 0;
         return 1;
@@ -3572,7 +3570,7 @@ int Insert(char * query, DatabaseData * data,u_int32_t inTransac)
         char *blob = NULL;
 	
         /* If BLOB type - split query to actual SQL and blob to BLOB data */
-        if(strncasecmp(query,"INSERT INTO data",16)==0 || strncasecmp(query,"INSERT INTO opt",15)==0)
+        if(strncasecmp(query,"INSERT INTO payloads",16)==0 || strncasecmp(query,"INSERT INTO options",15)==0)
         {
             if((blob=strchr(query,'|')) != NULL)
             {
